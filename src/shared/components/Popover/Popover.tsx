@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react'
 import styles from './Popover.module.css'
 
-type Placement = 'top'
+type Placement = 'top';
 
 export interface PopoverProps {
   content: ReactNode
   children: ReactNode
   placement?: Placement
   popoverClassName?: string
-  className?: string
+  className?: string | undefined
 }
 
 export function Popover({

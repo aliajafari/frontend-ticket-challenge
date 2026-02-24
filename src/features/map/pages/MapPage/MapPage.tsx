@@ -30,21 +30,21 @@ export function MapPage() {
         onSeatSelect={setSelectedSeat}
       />
 
-      {selectedSeat && (
-        <div className={styles.footer}>
-          <p className={styles.selection}>
-            Selected: Row {selectedSeat.y + 1}, Seat {selectedSeat.x + 1}
-          </p>
-          <button
-            className={styles.buyButton}
-            onClick={() => void purchaseTicket(selectedSeat)}
-            disabled={purchasing}
-          >
-            {purchasing ? 'Processing...' : 'Buy Ticket'}
-          </button>
-          {purchaseError && <p className={styles.error}>{purchaseError}</p>}
-        </div>
-      )}
+      <div className={styles.footer}>
+        <p className={styles.selection}>
+          {selectedSeat
+            ? `Selected: Row ${selectedSeat.y + 1}, Seat ${selectedSeat.x + 1}`
+            : 'Select a seat to continue'}
+        </p>
+        <button
+          className={styles.buyButton}
+          onClick={() => (selectedSeat ? void purchaseTicket(selectedSeat) : undefined)}
+          disabled={purchasing || !selectedSeat}
+        >
+          {purchasing ? 'Processing...' : 'Buy Ticket'}
+        </button>
+        {purchaseError && <p className={styles.error}>{purchaseError}</p>}
+      </div>
     </main>
   )
 }

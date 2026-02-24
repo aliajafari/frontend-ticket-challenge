@@ -10,7 +10,7 @@ const SAMPLE_MAP: SeatMatrix = [
   [0, 0, 1, 0],
   [0, 1, 0, 0],
   [1, 1, 1, 1],
-  [1, 1, 1, 1],
+  [1, 1, 1, 1]
 ]
 
 export const mockMapApi: MapApi = {
