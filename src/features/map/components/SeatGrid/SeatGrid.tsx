@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import type { SeatMatrix, SeatCoordinate } from '@/types'
+import { Popover } from '@/shared/components/Popover/Popover'
 import styles from './SeatGrid.module.css'
 
 interface SeatGridProps {
@@ -31,7 +32,7 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
   return (
     <div className={styles.wrapper} onClick={handleClick}>
       {matrix.map((row, rowIdx) => (
-        <div key={rowIdx} className={styles.row} role="row">
+        <div key={rowIdx} className={styles.row}>
           {row.map((status, colIdx) => {
             const isSelected = selectedSeat?.x === colIdx && selectedSeat?.y === rowIdx
             const isReserved = status === 1
@@ -43,21 +44,21 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
                 : styles.seatAvailable
 
             return (
-              <div
+              <Popover
                 key={colIdx}
-                role="gridcell"
-                className={`${styles.seat} ${seatClass}`}
-                data-row={rowIdx}
-                data-col={colIdx}
-                aria-label={`Row ${rowIdx + 1} Seat ${colIdx + 1} — ${isReserved ? 'reserved' : isSelected ? 'selected' : 'available'}`}
-                aria-selected={isSelected}
-                aria-disabled={isReserved}
+                content={
+                  <>
+                    <span>Row: {rowIdx + 1}</span>
+                    <span>Column: {colIdx + 1}</span>
+                  </>
+                }
               >
-                <div className={styles.popover}>
-                  <span>Row: {rowIdx + 1}</span>
-                  <span>Column: {colIdx + 1}</span>
-                </div>
-              </div>
+                <div
+                  className={`${styles.seat} ${seatClass}`}
+                  data-row={rowIdx}
+                  data-col={colIdx}
+                />
+              </Popover>
             )
           })}
         </div>
