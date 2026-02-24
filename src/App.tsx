@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { MapPage } from './pages/MapPage/MapPage'
-import { TicketPage } from './pages/TicketPage/TicketPage'
+import { MapPage } from '@/features/map/pages/MapPage/MapPage'
+import { TicketPage } from '@/features/ticket/pages/TicketPage/TicketPage'
 
 export default function App() {
   return (

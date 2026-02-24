@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { mapApi } from '@/modules/map'
+import { mapApi } from '@/features/map/api'
 import type { StadiumMap } from '@/types'
 
 interface UseStadiumMapResult {

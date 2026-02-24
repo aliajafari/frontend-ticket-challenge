@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { useStadiumMap } from '@/hooks/useStadiumMap'
-import { useTicket } from '@/hooks/useTicket'
-import { SeatGrid } from '@/components/SeatGrid/SeatGrid'
-import { SeatLegend } from '@/components/SeatLegend/SeatLegend'
-import { LoadingSpinner } from '@/components/LoadingSpinner/LoadingSpinner'
+import { useStadiumMap, useTicket } from '@/features/map/hooks'
+import { SeatGrid } from '@/features/map/components/SeatGrid/SeatGrid'
+import { SeatLegend } from '@/features/map/components/SeatLegend/SeatLegend'
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner/LoadingSpinner'
 import type { SeatCoordinate } from '@/types'
 import styles from './MapPage.module.css'
 

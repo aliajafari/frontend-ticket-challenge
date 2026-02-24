@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { mapApi } from '@/modules/map'
+import { mapApi } from '@/features/map/api'
 import type { SeatCoordinate } from '@/types'
 
 interface UseTicketResult {
