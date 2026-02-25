@@ -6,6 +6,7 @@ The Volleyball Federation has decided to use an online selling platform for the 
 
 In this challenge, you are going to develop a **responsive web application** to display stadium seats randomly to the user. Users can select a seat and buy a ticket. After buying the ticket, you should redirect to **another page** that shows the ticket ID to the user.
 
+
 ## API Standard
 
 ### `GET /map`
