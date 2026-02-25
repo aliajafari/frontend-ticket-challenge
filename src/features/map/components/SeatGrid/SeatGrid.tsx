@@ -21,6 +21,7 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
   const viewportRef = useRef<HTMLDivElement>(null)
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>(1)
   const [vpWidth, setVpWidth] = useState(0)
+  const [scrollTop, setScrollTop] = useState(0)
 
   const cols = matrix[0]?.length ?? 1
 
@@ -39,6 +40,18 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     vpWidth > 0
       ? Math.min(600, rows * baseSeatSize + (rows - 1) * GAP + PADDING * 2)
       : undefined
+
+  // Virtual scrolling — only render rows within the visible window + buffer.
+  const BUFFER = 5
+  const rowHeight  = seatSize + GAP
+  const viewportH  = lockedViewportHeight ?? 600
+  const firstRow   = Math.max(0, Math.floor((scrollTop - PADDING) / rowHeight) - BUFFER)
+  const lastRow    = Math.min(rows - 1, Math.ceil((scrollTop - PADDING + viewportH) / rowHeight) + BUFFER)
+  // Spacer heights compensate for hidden rows; subtract one GAP to offset the
+  // flex gap that appears between the spacer div and its neighbouring row.
+  const topSpacerH       = firstRow > 0 ? firstRow * rowHeight - GAP : 0
+  const hiddenBelow      = rows - 1 - lastRow
+  const bottomSpacerH    = hiddenBelow > 0 ? hiddenBelow * rowHeight - GAP : 0
 
   const pendingScrollRef = useRef<{
     baseX: number
@@ -82,11 +95,14 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     const p = pendingScrollRef.current
     if (!viewport || !p) return
     const ratio = p.nextScale / p.prevScale
+    const newTop = Math.max(0, Math.round(p.baseY * ratio - p.py))
     viewport.scrollTo({
       left: p.baseX * ratio - p.px,
-      top:  p.baseY * ratio - p.py,
+      top:  newTop,
       behavior: p.behavior,
     })
+    // Sync immediately so virtual rows update before the scroll animation plays.
+    setScrollTop(newTop)
     pendingScrollRef.current = null
   }, [zoomLevel])
 
@@ -278,6 +294,10 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     if (gestureRef.current.pointers.size === 0) gestureRef.current.panning  = null
   }, [])
 
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop)
+  }, [])
+
   const wrapperStyle = {
     '--seat-size': `${seatSize}px`,
     '--seat-gap':  `${GAP}px`,
@@ -318,44 +338,50 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
         className={styles.viewport}
         style={lockedViewportHeight !== undefined ? { height: `${lockedViewportHeight}px` } : undefined}
         onClick={handleClick}
+        onScroll={handleScroll}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUpOrCancel}
         onPointerCancel={handlePointerUpOrCancel}
       >
         <div className={styles.wrapper} style={wrapperStyle}>
-          {matrix.map((row, rowIdx) => (
-            <div key={rowIdx} className={styles.row}>
-              {row.map((status, colIdx) => {
-                const isSelected = selectedSeat?.x === colIdx && selectedSeat?.y === rowIdx
-                const isReserved  = status === 1
-                const seatClass = isSelected
-                  ? styles.seatSelected
-                  : isReserved
-                    ? styles.seatReserved
-                    : styles.seatAvailable
+          {firstRow > 0 && <div style={{ height: topSpacerH }} />}
+          {matrix.slice(firstRow, lastRow + 1).map((row, i) => {
+            const rowIdx = firstRow + i
+            return (
+              <div key={rowIdx} className={styles.row}>
+                {row.map((status, colIdx) => {
+                  const isSelected = selectedSeat?.x === colIdx && selectedSeat?.y === rowIdx
+                  const isReserved  = status === 1
+                  const seatClass = isSelected
+                    ? styles.seatSelected
+                    : isReserved
+                      ? styles.seatReserved
+                      : styles.seatAvailable
 
-                return (
-                  <Popover
-                    key={colIdx}
-                    className={styles.seatTrigger}
-                    content={
-                      <>
-                        <span>Row: {rowIdx + 1}</span>
-                        <span>Column: {colIdx + 1}</span>
-                      </>
-                    }
-                  >
-                    <div
-                      className={`${styles.seat} ${seatClass}`}
-                      data-row={rowIdx}
-                      data-col={colIdx}
-                    />
-                  </Popover>
-                )
-              })}
-            </div>
-          ))}
+                  return (
+                    <Popover
+                      key={colIdx}
+                      className={styles.seatTrigger}
+                      content={
+                        <>
+                          <span>Row: {rowIdx + 1}</span>
+                          <span>Column: {colIdx + 1}</span>
+                        </>
+                      }
+                    >
+                      <div
+                        className={`${styles.seat} ${seatClass}`}
+                        data-row={rowIdx}
+                        data-col={colIdx}
+                      />
+                    </Popover>
+                  )
+                })}
+              </div>
+            )
+          })}
+          {hiddenBelow > 0 && <div style={{ height: bottomSpacerH }} />}
         </div>
       </div>
     </div>

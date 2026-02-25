@@ -6,12 +6,10 @@ const MOCK_DELAY_MS = 300
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
-const SAMPLE_MAP: SeatMatrix = [
-  [0, 0, 1, 0],
-  [0, 1, 0, 0],
-  [1, 1, 1, 1],
-  [1, 1, 1, 1]
-]
+// 40 columns × 50 rows = 2 000 seats; ~30 % randomly reserved.
+const SAMPLE_MAP: SeatMatrix = Array.from({ length: 50 }, () =>
+  Array.from({ length: 40 }, () => (Math.random() < 0.3 ? 1 : 0)),
+) as SeatMatrix
 
 export const mockMapApi: MapApi = {
   async getMaps(): Promise<MapList> {
