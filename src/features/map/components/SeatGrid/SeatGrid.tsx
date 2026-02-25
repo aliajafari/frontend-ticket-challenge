@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { SeatMatrix, SeatCoordinate } from '@/types'
 import { Popover } from '@/shared/components/Popover/Popover'
+import { GAP, PADDING, ZOOM_SCALE, type ZoomLevel } from '@/features/map/constants'
 import styles from './SeatGrid.module.css'
 
 interface SeatGridProps {
@@ -8,14 +9,6 @@ interface SeatGridProps {
   selectedSeat: SeatCoordinate | null
   onSeatSelect: (coord: SeatCoordinate) => void
 }
-
-type ZoomLevel = 1 | 2 | 3
-
-// Each zoom level multiplies the base seat size
-const ZOOM_SCALE: Record<ZoomLevel, number> = { 1: 1, 2: 2, 3: 3 }
-
-const GAP = 4     
-const PADDING = 12 
 
 export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) {
   const viewportRef = useRef<HTMLDivElement>(null)

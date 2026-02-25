@@ -1,17 +1,9 @@
 import type { MapList, SeatMatrix, TicketResponse } from '@/types'
 import type { MapApi } from './types'
-
-const MOCK_DELAY_MS = 300
+import { MOCK_DELAY_MS, SAMPLE_MAP } from '@/features/map/constants'
 
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
-
-const SAMPLE_MAP: SeatMatrix = [
-  [0, 0, 1, 0],
-  [0, 1, 0, 0],
-  [1, 1, 1, 1],
-  [1, 1, 1, 1]
-]
 
 export const mockMapApi: MapApi = {
   async getMaps(): Promise<MapList> {
