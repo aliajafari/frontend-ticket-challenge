@@ -57,35 +57,15 @@ Don't forget that many stadium seats are available (around 100k), so try to impl
 
 Please fork this repository and add your code to that. Don't forget that your commits are important, so be sure that you're committing your code often with a proper commit message.
 
-## Architecture decisions
 
-### Feature-based folder structure
-Code is organised by feature (`features/map`, `features/ticket`) rather than by type (components, hooks, pages). This keeps all code related to a feature co-located and makes it easy to reason about or remove a feature without hunting across the tree.
+## Branches
 
-### API abstraction layer
-`MapApi` is an interface. `mockApi` and `realApi` both implement it. `features/map/api/index.ts` selects the implementation at boot time based on `VITE_API_MODE`. This means no component or hook ever imports a concrete API — swapping to real endpoints requires zero application-code changes.
+| Branch | Description |
+|---|---|
+| `master` | Standard `SeatGrid` — renders all rows directly; suitable for typical stadium maps. |
+| `virtual-seat-grid` | Virtualized `SeatGrid` — only renders the rows visible in the viewport (+ a small buffer). Handles large seat counts (3K+) without performance degradation. |
 
-### SeatGrid — event delegation
-Rather than attaching an `onClick` to every seat `<div>` (which would create thousands of handlers for large maps), a single `onClick` is attached to the viewport container. The handler reads `data-row` / `data-col` from `event.target` to identify the seat. This is both more memory-efficient and simpler to reason about.
 
-### SeatGrid — pointer capture only for touch
-`setPointerCapture` is called only for `pointerType === 'touch'`. Capturing mouse pointers redirects the subsequent `click` event to the capturing element (the viewport), which breaks `event.target`-based delegation. Touch capture is still needed so a dragging finger that leaves the viewport boundary continues to be tracked.
-
-### Zoom implementation
-Zoom is implemented by scaling the computed seat pixel size (via `ResizeObserver` + `ZOOM_SCALE` multiplier) rather than CSS `transform: scale()`. CSS transform does not affect the scrollable area, so overflow-based scrolling would not work at higher zoom levels. Scaling the actual element sizes lets the browser handle scroll geometry natively.
-
-## Performance at scale (100k seats)
-
-The current implementation renders every seat as a DOM `<div>`. This is fine for maps up to ~1 000–2 000 seats but would cause a severe performance problem at 100k seats (layout thrashing, large DOM, slow paint).
-
-**The correct approach for large maps is row-level virtual scrolling:**
-
-1. Only render the rows that are currently visible inside the viewport (the visible window), plus a small overscan buffer above and below.
-2. Use a `ResizeObserver` to track the viewport height and an `onScroll` listener to track the scroll position.
-3. Derive `firstVisibleRow` and `lastVisibleRow` from `scrollTop / rowHeight`.
-4. Render a spacer `<div>` with `height = firstVisibleRow × rowHeight` at the top and another with `height = (totalRows - lastVisibleRow) × rowHeight` at the bottom so the scrollbar represents the full content height.
-
-This limits the live DOM to the ~30–50 rows in view at any time regardless of the total seat count. Libraries such as `@tanstack/react-virtual` implement this pattern out of the box. The horizontal axis follows the same principle when the number of columns is large.
 
 ## Run locally
 
