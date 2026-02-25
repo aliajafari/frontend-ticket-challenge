@@ -57,6 +57,16 @@ Don't forget that many stadium seats are available (around 100k), so try to impl
 
 Please fork this repository and add your code to that. Don't forget that your commits are important, so be sure that you're committing your code often with a proper commit message.
 
+
+## Branches
+
+| Branch | Description |
+|---|---|
+| `master` | Standard `SeatGrid` — renders all rows directly; suitable for typical stadium maps. |
+| `virtual-seat-grid` | Virtualized `SeatGrid` — only renders the rows visible in the viewport (+ a small buffer). Handles large seat counts (3K+) without performance degradation. |
+
+
+
 ## Run locally
 
 ```bash
