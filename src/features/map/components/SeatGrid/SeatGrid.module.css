@@ -41,7 +41,7 @@
 }
 
 .viewport {
-  overflow: auto;
+  /* overflow: auto; */
   touch-action: none;
   overscroll-behavior: contain;
   user-select: none;

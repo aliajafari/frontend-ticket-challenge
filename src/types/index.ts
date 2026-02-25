@@ -5,7 +5,6 @@ export interface SeatCoordinate {
   y: number
 }
 
-export type SeatStatus = 'available' | 'reserved' | 'selected'
 
 export interface TicketResponse {
   ticketId: string

@@ -11,11 +11,11 @@ interface SeatGridProps {
 
 type ZoomLevel = 1 | 2 | 3
 
-// Each zoom level multiplies the base seat size
+// Pixel scaling instead of CSS transform so overflow-based scroll stays correct.
 const ZOOM_SCALE: Record<ZoomLevel, number> = { 1: 1, 2: 2, 3: 3 }
 
-const GAP = 4     
-const PADDING = 12 
+const GAP = 4      // px between seats (fixed, does not scale with zoom)
+const PADDING = 12 // px of wrapper padding on each side
 
 export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) {
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -24,6 +24,7 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
 
   const cols = matrix[0]?.length ?? 1
 
+  // Fits all columns at zoom=1, capped at 36 px to prevent oversized seats.
   const baseSeatSize =
     vpWidth > 0
       ? Math.max(6, Math.min(36, Math.floor((vpWidth - PADDING * 2 - (cols - 1) * GAP) / cols)))
@@ -33,6 +34,7 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
   const radius   = Math.max(3, Math.round(seatSize * 0.12))
 
   const rows = matrix.length
+  // Locked to zoom=1 height so the container never resizes when zooming.
   const lockedViewportHeight =
     vpWidth > 0
       ? Math.min(600, rows * baseSeatSize + (rows - 1) * GAP + PADDING * 2)
@@ -62,7 +64,7 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     suppressClickUntil: 0,
   })
 
-  // Track viewport width to compute base seat size
+  // Keep seat size in sync with container width on every resize.
   useEffect(() => {
     const el = viewportRef.current
     if (!el) return
@@ -73,8 +75,8 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     return () => ro.disconnect()
   }, [])
 
-  // After zoom, scroll so the focal point stays visually in place.
-  // Runs synchronously after DOM paint so new seat sizes are already applied.
+  // Reposition scroll after zoom so the focal point stays in place.
+  // useLayoutEffect runs before paint, so new seat sizes are already in the DOM.
   useLayoutEffect(() => {
     const viewport = viewportRef.current
     const p = pendingScrollRef.current
@@ -119,7 +121,8 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     [zoomAtPoint],
   )
 
-  // Non-passive wheel listener — prevents ctrl+wheel / trackpad pinch from zooming the page
+  // Non-passive wheel listener — React's onWheel is passive, so we attach
+  // imperatively to be able to call preventDefault on ctrl+wheel / pinch.
   useEffect(() => {
     const viewport = viewportRef.current
     if (!viewport) return
@@ -146,7 +149,7 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
     }
   }, [zoomAtPoint, zoomLevel])
 
-  // Event delegation — reads data-row / data-col from the clicked seat div
+  // Single delegated handler for all seat clicks — avoids O(n) listeners.
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (Date.now() < gestureRef.current.suppressClickUntil) return
@@ -173,10 +176,10 @@ export function SeatGrid({ matrix, selectedSeat, onSeatSelect }: SeatGridProps) 
       const last = gestureRef.current.lastTap
       const isTouch = e.pointerType === 'touch'
 
-      // Only capture touch — capturing mouse breaks click event delegation
+      // Touch-only capture; capturing mouse pointers breaks click delegation.
       if (isTouch) viewport.setPointerCapture(e.pointerId)
 
-      // Double-tap to zoom (touch only)
+      // Double-tap zoom (touch only).
       if (isTouch && last && now - last.t < 320) {
         const dx = e.clientX - last.x
         const dy = e.clientY - last.y
